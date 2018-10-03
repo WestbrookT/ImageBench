@@ -711,7 +711,7 @@ def shuffle_examples(inputs, outputs, seed=1):
 
 
 
-def permute(paths, points, size=50, rescale=.4, max_angle=10, max_scale=30, max_translate=20):
+def permute(paths, points_list, size=50, rescale=.4, max_angle=10, max_scale=30, max_translate=20):
 
     # rotate first
     # scale
@@ -726,11 +726,12 @@ def permute(paths, points, size=50, rescale=.4, max_angle=10, max_scale=30, max_
     singular = False 
     if type(paths) != type([]):
         paths = [paths]
+        points_list = [points_list]
         singular = True 
     
     out = []
 
-    for pathname in paths:
+    for pathname, points in zip(paths, points):
         img = to_PIL(pathname)
 
         img, points = scale_data(img, points, rescale)
