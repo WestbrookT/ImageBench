@@ -662,7 +662,7 @@ if __name__ == '__main__':
     #
     # img = Image.open('rgba.png')
     # img.show()
-    img = pygame.image.load("face.JPG")
+    img = pygame.image.load("rgba.png")
 
     # input('waiting...')
     # to_PIL(to_array('rgba.png')).show()
@@ -711,44 +711,54 @@ def shuffle_examples(inputs, outputs, seed=1):
 
 
 
-def permute(pathname, points, size=50, rescale=.4, max_angle=10, max_scale=30, max_translate=20):
+def permute(paths, points, size=50, rescale=.4, max_angle=10, max_scale=30, max_translate=20):
 
     # rotate first
     # scale
     # translate
-    # crop
-
-    img = to_PIL(pathname)
-
-    img, points = scale_data(img, points, rescale)
+    # crop    
 
     angle = random.randint(-max_angle, max_angle)
     scale = random.randrange(100-max_scale,100+max_scale-10)/100
     flip_bool = random.random() < .5
+    x_translation = random.randint(-max_translate, max_translate)
+    y_translation = random.randint(-max_translate, max_translate)
+    singular = False 
+    if type(paths) != type([]):
+        paths = [paths]
+        singular = True 
     
+    out = []
 
-    xc = 0
-    yc = 0
-    count = 0
-    for point in points:
-        if point[0] == 0 and point[1] == 0:
-            continue
-        xc += point[0]
-        yc += point[1]
-        count += 1
-    center = xc/count, yc/count
+    for pathname in paths:
+        img = to_PIL(pathname)
 
-    center = center[0] + random.randint(-max_translate, max_translate), center[1] + random.randint(-max_translate, max_translate)
+        img, points = scale_data(img, points, rescale)
 
-    img, points = rotate_data(img, points, angle)
-    img, points = scale_data(img, points, scale)
-    #img, points = resize(img, int(img.width*scale), int(img.height*scale))
-    img, points = crop_data(img, points, size, center=center)
+        xc = 0
+        yc = 0
+        count = 0
+        for point in points:
+            if point[0] == 0 and point[1] == 0:
+                continue
+            xc += point[0]
+            yc += point[1]
+            count += 1
+        center = xc/count, yc/count
 
-    if flip_bool:
-        img, points = flip(img, points, flat=False)
+        center = center[0] + x_translation, center[1] + y_translation
 
-    return img, points
+        img, points = rotate_data(img, points, angle)
+        img, points = scale_data(img, points, scale)
+        
+        img, points = crop_data(img, points, size, center=center)
+
+        if flip_bool:
+            img, points = flip(img, points, flat=False)
+        
+        out.append((img, points))
+
+    return out[0] if singular else out
 
 
 def create_data_generator(pathnames, points, size, batch_size, rescale=.4, max_angle=10, max_scale=30, max_translate=20):
