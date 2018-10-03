@@ -745,8 +745,11 @@ def permute(paths, points_list, size=50, rescale=.4, max_angle=10, max_scale=30,
             xc += point[0]
             yc += point[1]
             count += 1
-        center = xc/count, yc/count
 
+        if count > 0:
+            center = xc/count, yc/count
+        else:
+            center = img.width//2, img.height//2 
         center = center[0] + x_translation, center[1] + y_translation
 
         img, points = rotate_data(img, points, angle)
